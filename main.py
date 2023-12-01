@@ -9,7 +9,9 @@ from aiogram import Bot, Dispatcher, executor, types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
-from magic_filter import F
+# from aiogram.dispatcher.filters import Command
+# from filters.chat_type import ChatTypeFilter
+
 
 
 
@@ -22,8 +24,11 @@ class Form(StatesGroup):
     name = State()
     service = State()
     problem = State()
+    degree = State()
     address = State()
     timeV = State()
+    timeAlt = State()
+
 
 
 async def on_startup(_):
@@ -57,6 +62,14 @@ async def problem_message(message: types.Message, state: FSMContext):
     await botMes.send_message(message.from_user.id, "Введите адрес, где произошла ошибка и номер кабинета (например: Фрунзе 57/1, каб.11")
 
 
+@bot.message_handler(state=Form.degree)  # Обработка всех текстовых сообщений
+async def address_message(message: types.Message, state: FSMContext):
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
+    markup.add("Общий", "Локальный")
+
+    await Form.next()
+    await botMes.send_message(message.from_user.id, "Оцените степень влияния сбоя", reply_markup=markup)
+
 @bot.message_handler(state=Form.address)  # Обработка всех текстовых сообщений
 async def address_message(message: types.Message, state: FSMContext):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
@@ -65,21 +78,22 @@ async def address_message(message: types.Message, state: FSMContext):
     await Form.next()
     await botMes.send_message(message.from_user.id, "Выберите время возникновения ошибки", reply_markup=markup)
 
-@bot.message_handler(F.from_user.as_("Сейчас"))
+@bot.message_handler(state=Form.timeV)
 async def now_message(message: types.Message, state: FSMContext):
+    if message.text == "Сейчас":
+        await Form.set()
+        await botMes.send_message(message.from_user.id, "Спасибо! Информация о сбое направлена в техподдержкку. "
+                                                        "\n Для повторной отправки сообщения нажмите /start")
+    if message.text == "Ввести врмя вручную":
+        await Form.next()
+        await botMes.send_message(message.from_user.id, "Введите время")
 
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
-    markup.add("Общий", "Локальный")
-    print(54634)
-    await Form.next()
-    await botMes.send_message(message.from_user.id, "Определите степень влияния сбоя", reply_markup=markup)
 
-
-@bot.message_handler(F.text.lower() == "Ввести врмя вручную")
-async def time_message(message: types.Message, state: FSMContext):
-    print("fdghjkl")
-    await Form.next()
-    await botMes.send_message(message.from_user.id, "Введите время")
+@bot.message_handler(state=Form.timeAlt)
+async def now_message(message: types.Message, state: FSMContext):
+    await Form.set()
+    await botMes.send_message(message.from_user.id, "Спасибо! Информация о сбое направлена в техподдержкку. "
+                                                    "\n Для повторной отправки сообщения нажмите /start")
 
 
 if __name__ == '__main__':

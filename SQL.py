@@ -52,10 +52,10 @@ async def datetime_fix_from_db(table_name_db, user_id, datetime_fix): #Запи�
     cur.execute(sql_update_query)
     db.commit()
 
-# async def del_null_row_from_db(table_name): #Удаляем первую пустую строку
-#     sql_update_query = f"""DELETE top(1) FROM {table_name} """
-#     cur.execute(sql_update_query)
-#     db.commit()
+async def del_row_from_db(table_name, user_id): #Удаляем первую пустую строку
+    sql_update_query = f"""DELETE  FROM {table_name} where User_id = {user_id} and Redact = 1"""
+    cur.execute(sql_update_query)
+    db.commit()
 
 async def load_from_db(table_name):
     df = pd.read_sql(f"SELECT * FROM Requests", sq.connect('videoconf.db'))

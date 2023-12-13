@@ -57,13 +57,22 @@ async def del_row_from_db(table_name, user_id): #Удаляем первую п�
     cur.execute(sql_update_query)
     db.commit()
 
-async def load_from_db(table_name):
+async def load_from_db(): #Получаем информацию из таблицы Requests
     df = pd.read_sql(f"SELECT * FROM Requests", sq.connect('videoconf.db'))
+    return df
+
+async def load_from_VKS_db(): #Получаем информацию из таблицы VKS
+    df = pd.read_sql(f"SELECT * FROM VKS", sq.connect('videoconf.db'))
     return df
 
 async def forward_message_from_db(user_id):
     df = pd.read_sql(f"SELECT * FROM Requests where User_id = {user_id} and Redact = 1 ", sq.connect('videoconf.db'))
     return df
+
+async def serch_request_from_db(ID):
+    df = pd.read_sql(f"SELECT * FROM Requests where ID = {ID} ", sq.connect('videoconf.db'))
+    return df
+
 
 # async def user_id_from_db(table_name_db, user_id, user_phone): #Вносим номер телефона участника
 #     sql_update_query = f"""Update {table_name_db} as A  set user_ID = {user_id}

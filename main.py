@@ -40,7 +40,7 @@ class Req(StatesGroup):
     search = State()
 
 #Текст сообщения
-start_message = 'Если чаб-бот завис или вы передумали, то нажмите кнопку "Выйти"' \
+start_message = 'Если чаб-бот завис, нажмите на  /cancel, если вы передумали, то нажмите кнопку "Выйти"' \
                 '\n Для повторной отправки сообщения нажмите /start'
 
 
@@ -291,7 +291,7 @@ async def start(message: types.message):
 async def start(message: types.message, table_name_db=table_name_db):
     await Doc.file.set()
     #Отправляем сообщение
-    await botMes.send_message(message.from_user.id, "Отправьте в чат файл. Названя столбцов не должны меняться. "
+    await botMes.send_message(message.from_user.id, "Отправьте в чат файл. Названия столбцов не должны меняться. "
                                                     "Не должно быть лишних пометок.")
 
 @bot.message_handler(content_types=types.ContentType.DOCUMENT, state=Doc.file)  # Обрабатываем документ
@@ -334,6 +334,13 @@ async def doc_message(message: types.Message, state: FSMContext, table_name_db=t
         for i in range(0, df.shape[1]):
             await botMes.send_message(message.from_user.id, f"{df.columns[i]} {df[df.columns[i]].values[0]}")
     await state.finish()
+
+
+@bot.message_handler(state='*', commands='cancel')
+async def cancel_handler(message: types.Message, state: FSMContext):
+    # await message.answer('Действие отменено')
+    await state.finish()
+    await botMes.send_message(message.from_user.id, start_message)
 
 
 if __name__ == '__main__':
